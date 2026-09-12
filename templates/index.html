@@ -1,105 +1,96 @@
-
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>ESP32 Real-time Monitor</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotary Encoder Real-time Monitor</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
         body {
-            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             text-align: center;
-            margin-top: 80px;
+            max-width: 400px;
+            width: 90%;
         }
-
-        .status-box {
-            display: inline-block;
-            padding: 20px 40px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            background-color: #f5f5f5;
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #00d2ff;
         }
-
-        #data-status {
-            font-size: 28px;
-            font-weight: bold;
+        .display-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 15px;
             margin-top: 15px;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+        }
+        .label {
+            font-size: 1rem;
+            color: #a0a0a0;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .value {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #3a7bd5;
+            text-shadow: 0 0 15px rgba(58, 123, 213, 0.6);
+        }
+        .status {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #00ff88;
         }
     </style>
 </head>
-
 <body>
 
-    <div class="status-box">
-
-        <h1>ESP32 Real-time Monitor</h1>
-
-        <p>ข้อมูลล่าสุดจาก ESP32:</p>
-
-        <!-- จุดที่จะแสดงข้อมูล Real-time -->
-        <div id="data-status">
-            กำลังรอข้อมูล...
+    <div class="container">
+        <h1>ESP32 Monitor</h1>
+        <div class="display-card">
+            <div class="label">Rotary Encoder Value</div>
+            <div class="value" id="encoderValue">0</div>
         </div>
-
+        <div class="status">● Real-time Live Connection</div>
     </div>
 
-
     <script>
-
-        // ==========================================
-        // ฟังก์ชันดึงข้อมูลจาก Flask
-        // ==========================================
-        function updateData() {
-
-            fetch("/get_data")
-                .then(response => {
-
-                    // ตรวจสอบว่า Server ตอบกลับมาปกติหรือไม่
-                    if (!response.ok) {
-                        throw new Error("Server error");
-                    }
-
-                    return response.json();
-                })
-
+        function fetchData() {
+            fetch('/get_data')
+                .then(response => response.json())
                 .then(data => {
-
-                    // นำค่าจาก JSON มาแสดง
-                    // โดยแก้เฉพาะ element ที่มี id="data-status"
-                    document.getElementById("data-status").textContent = data.status;
-
+                    document.getElementById('encoderValue').innerText = data.value;
                 })
-
                 .catch(error => {
-
-                    console.error("เกิดข้อผิดพลาด:", error);
-
-                    document.getElementById("data-status").textContent =
-                        "ไม่สามารถเชื่อมต่อ Server ได้";
-
+                    console.error('Error fetching data:', error);
                 });
         }
 
-
-        // ==========================================
-        // ดึงข้อมูลทันทีเมื่อเปิดหน้าเว็บ
-        // ==========================================
-        updateData();
-
-
-        // ==========================================
-        // ดึงข้อมูลใหม่ทุก ๆ 2 วินาที
-        // ==========================================
-        setInterval(updateData, 2000);
-
+        // ดึงข้อมูลทุกๆ 2 วินาที (2000 ms)
+        setInterval(fetchData, 2000);
+        
+        // ดึงข้อมูลครั้งแรกทันทีที่โหลดหน้าเว็บ
+        fetchData();
     </script>
 
 </body>
-
 </html>
-

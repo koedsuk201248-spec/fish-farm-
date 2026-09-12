@@ -2,27 +2,28 @@ from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-# ตัวแปรเก็บค่าล่าสุด
-latest_data = "ยังไม่มีข้อมูล"
+# ตัวแปรสำหรับเก็บค่า Rotary Encoder ล่าสุด
+encoder_data = {"value": 0}
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/update', methods=['POST'])
-def update():
-    global latest_data
-    # รับข้อมูลแบบ Plain Text ที่ ESP32 ส่งมา
-    data = request.data.decode('utf-8')
-    if data:
-        latest_data = data
-        return "OK", 200
-    return "No data", 400
+def update_data():
+    global encoder_data
+    try:
+        data = request.get_json()
+        if data and 'value' in data:
+            encoder_data['value'] = data['value']
+            return jsonify({"status": "success", "value": encoder_data['value']}), 200
+        return jsonify({"status": "error", "message": "Invalid format"}), 400
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/get_data')
+@app.route('/get_data', methods=['GET'])
 def get_data():
-    # ส่งค่าล่าสุดกลับไปให้หน้าเว็บในรูปแบบ JSON
-    return jsonify({'status': latest_data})
+    return jsonify(encoder_data), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
