@@ -1,39 +1,29 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-# ตัวแปรสำหรับเก็บค่า Rotary Encoder
-encoder_data = {"value": 0}
+encoder_value = 0
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# ปรับ Route ให้รับทั้งแบบมี / และไม่มี / ที่ท้าย URL
-@app.route('/update', methods=['POST', 'GET'])
-@app.route('/update/', methods=['POST', 'GET'])
+@app.route('/update', methods=['POST'])
 def update_data():
-    global encoder_data
+    global encoder_value
     try:
-        # รับค่าแบบ JSON
-        if request.is_json:
-            data = request.get_json()
-            if data and 'value' in data:
-                encoder_data['value'] = int(data['value'])
-                return jsonify({"status": "success", "value": encoder_data['value']}), 200
-
-        # รับค่าแบบ URL-encoded (Form)
-        if 'value' in request.form:
-            encoder_data['value'] = int(request.form['value'])
-            return jsonify({"status": "success", "value": encoder_data['value']}), 200
-
-        return jsonify({"status": "error", "message": "No value provided"}), 400
+        data = request.get_json()
+        if data and 'value' in data:
+            encoder_value = int(data['value'])
+            # ยิงข้อมูลออก WebSocket ทันทีที่ได้รับ POST จาก ESP32
+            socketio.emit('update_encoder', {'value': encoder_value})
+            return {"status": "success"}, 200
+        return {"status": "error"}, 400
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route('/get_data', methods=['GET'])
-def get_data():
-    return jsonify(encoder_data), 200
+        return {"status": "error", "message": str(e)}, 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
