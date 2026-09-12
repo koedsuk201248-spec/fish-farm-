@@ -1,10 +1,105 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="th">
+
 <head>
     <meta charset="UTF-8">
-    <title>Fish Farm Monitor</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ESP32 Real-time Monitor</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        .status-box {
+            display: inline-block;
+            padding: 20px 40px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f5f5f5;
+        }
+
+        #data-status {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
 </head>
+
 <body>
-    <h2>Status: {{ data }}</h2>
+
+    <div class="status-box">
+
+        <h1>ESP32 Real-time Monitor</h1>
+
+        <p>ข้อมูลล่าสุดจาก ESP32:</p>
+
+        <!-- จุดที่จะแสดงข้อมูล Real-time -->
+        <div id="data-status">
+            กำลังรอข้อมูล...
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // ==========================================
+        // ฟังก์ชันดึงข้อมูลจาก Flask
+        // ==========================================
+        function updateData() {
+
+            fetch("/get_data")
+                .then(response => {
+
+                    // ตรวจสอบว่า Server ตอบกลับมาปกติหรือไม่
+                    if (!response.ok) {
+                        throw new Error("Server error");
+                    }
+
+                    return response.json();
+                })
+
+                .then(data => {
+
+                    // นำค่าจาก JSON มาแสดง
+                    // โดยแก้เฉพาะ element ที่มี id="data-status"
+                    document.getElementById("data-status").textContent = data.status;
+
+                })
+
+                .catch(error => {
+
+                    console.error("เกิดข้อผิดพลาด:", error);
+
+                    document.getElementById("data-status").textContent =
+                        "ไม่สามารถเชื่อมต่อ Server ได้";
+
+                });
+        }
+
+
+        // ==========================================
+        // ดึงข้อมูลทันทีเมื่อเปิดหน้าเว็บ
+        // ==========================================
+        updateData();
+
+
+        // ==========================================
+        // ดึงข้อมูลใหม่ทุก ๆ 2 วินาที
+        // ==========================================
+        setInterval(updateData, 2000);
+
+    </script>
+
 </body>
+
 </html>
+
