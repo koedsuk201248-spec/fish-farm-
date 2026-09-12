@@ -85,10 +85,9 @@
                 });
         }
 
-        // ดึงข้อมูลทุกๆ 2 วินาที (2000 ms)
-        setInterval(fetchData, 2000);
+        // ดึงข้อมูลทุกๆ 0.2 วินาที (200 ms) เพื่อความ Real-time
+        setInterval(fetchData, 200);
         
-        // ดึงข้อมูลครั้งแรกทันทีที่โหลดหน้าเว็บ
         fetchData();
     </script>
 

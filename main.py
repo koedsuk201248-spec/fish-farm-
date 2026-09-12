@@ -9,7 +9,6 @@ encoder_data = {"value": 0}
 def index():
     return render_template('index.html')
 
-# เพิ่ม route รองรับทั้ง /update และ /
 @app.route('/update', methods=['POST', 'GET'])
 def update_data():
     global encoder_data
