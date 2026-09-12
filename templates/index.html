@@ -54,7 +54,7 @@
             font-weight: bold;
             color: #3a7bd5;
             text-shadow: 0 0 15px rgba(58, 123, 213, 0.6);
-            transition: all 0.05s ease;
+            transition: all 0.01s ease;
         }
         .status {
             margin-top: 20px;
@@ -71,7 +71,7 @@
             <div class="label">Rotary Encoder Value</div>
             <div class="value" id="encoderValue">0</div>
         </div>
-        <div class="status">● System Active</div>
+        <div class="status">● System Active (10ms Turbo Mode)</div>
     </div>
 
     <script>
@@ -94,8 +94,8 @@
             }
         }
 
-        // ดึงข้อมูลทุกๆ 50 มิลลิวินาที
-        setInterval(fetchData, 50);
+        // ดึงข้อมูลทุกๆ 10 มิลลิวินาที
+        setInterval(fetchData, 10);
     </script>
 
 </body>
