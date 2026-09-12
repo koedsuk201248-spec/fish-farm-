@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rotary Encoder Real-time Monitor</title>
-    <!-- โหลดไลบรารี Socket.IO -->
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -73,17 +71,31 @@
             <div class="label">Rotary Encoder Value</div>
             <div class="value" id="encoderValue">0</div>
         </div>
-        <div class="status">● Ultra-Fast WebSocket Active</div>
+        <div class="status">● System Active</div>
     </div>
 
     <script>
-        // เชื่อมต่อ WebSocket
-        const socket = io();
+        let isFetching = false;
 
-        // รับค่าเมื่อ ESP32 ส่งข้อมูลมา และอัปเดตตัวเลขทันทีโดยไม่ต้องรอรอบ
-        socket.on('update_encoder', function(data) {
-            document.getElementById('encoderValue').innerText = data.value;
-        });
+        async function fetchData() {
+            if (isFetching) return;
+            isFetching = true;
+
+            try {
+                const response = await fetch('/get_data');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('encoderValue').innerText = data.value;
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        // ดึงข้อมูลทุกๆ 50 มิลลิวินาที
+        setInterval(fetchData, 50);
     </script>
 
 </body>
